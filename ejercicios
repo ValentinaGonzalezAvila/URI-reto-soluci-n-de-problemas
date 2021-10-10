@@ -1,0 +1,147 @@
+2615
+select city from customers
+2622
+select name from customers join legal_person on id = id_customers 
+2611
+select m.id, m.name
+  from movies AS m
+  inner join genres AS g
+  on m.id_genres=g.id
+  where g.description='Action';
+2623
+SELECT p.name, c.name
+from products AS p
+  inner join categories AS c
+  on p.id_categories=c.id
+WHERE (p.amount > 100) AND 
+(p.id_categories =1 OR p.id_categories =2 OR p.id_categories =3
+OR p.id_categories =6 OR p.id_categories =9);
+            
+2988
+SELECT 
+(
+    SELECT name 
+    FROM teams t 
+    WHERE t.id = team.id
+) as name,
+(
+    SELECT count(team_1) 
+    FROM matches 
+    WHERE team_1 = team.id
+)+(
+    SELECT count(team_2) 
+    FROM matches WHERE 
+    team_2 = team.id
+) as matches,
+(
+    SELECT sum(case when team_2_goals > team_1_goals then 1 else 0 END) as victories 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_2 
+    WHERE t.id = team.id
+)+(
+    SELECT sum(case when team_1_goals > team_2_goals then 1 else 0 END) 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_1 
+    WHERE t.id = team.id
+) as victories,
+(
+    SELECT sum(case when team_2_goals < team_1_goals then 1 else 0 END) as victories 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_2 
+    WHERE t.id = team.id
+)+(
+    SELECT sum(case when team_1_goals < team_2_goals then 1 else 0 END) 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_1 
+    WHERE t.id = team.id
+) as defeats,
+(
+    SELECT sum(case when team_2_goals = team_1_goals then 1 else 0 END) as victories 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_2 
+    WHERE t.id = team.id
+)+(
+    SELECT sum(case when team_1_goals = team_2_goals then 1 else 0 END) 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_1 
+    WHERE t.id = team.id
+) as draws,
+(
+    SELECT sum(case when team_2_goals > team_1_goals then 3 when team_2_goals = team_1_goals then 1 else 0 END) as victories 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_2 
+    WHERE t.id = team.id
+)+(
+    SELECT sum(case when team_1_goals > team_2_goals then 3 when team_1_goals = team_2_goals then 1 else 0 END) 
+    FROM teams t INNER JOIN matches m ON t.id = m.team_1 
+    WHERE t.id = team.id
+) as score
+FROM teams team
+ORDER BY score DESC
+2602
+select name from customers where state = 'RS'
+2616
+Select customers.id, customers.name 
+from customers
+where customers.id not in (select id_customers from locations);
+2742
+SELECT l.name, round((l.omega * 1.618), 3) AS FatorN 
+FROM life_registry l 
+INNER JOIN dimensions d
+ON l.dimensions_id = d.id 
+WHERE d.name IN ('C875', 'C774') AND
+l.name LIKE '%Richard%'
+ORDER BY l.omega ASC
+3001
+SELECT p.name,
+CASE
+    WHEN p.type = 'A' THEN 20.0
+    WHEN p.type = 'B' THEN 70.0
+ELSE 530.5
+END AS precio
+FROM products p
+ORDER BY p.type ASC, p.id DESC;
+2991
+Select distinct
+ depart.nome as "Nombre Departamento",
+ (select count(*) from empregado where lotacao = depart.cod_dep) as "Numero Empleados",
+ROUND(((select sum(cod_valor) from (select e.nome,
+sum( COALESCE(v.valor,0) ) as cod_valor
+from empregado e
+left join emp_venc ed
+on e.matr  = ed.matr
+left join vencimento v
+on v.cod_venc = ed.cod_venc
+where lotacao = depart.cod_dep
+group by e.nome)  as tdasd)
+-
+(select sum(descont) from 
+(select e.nome,
+	coalesce(sum(dc.valor),0) as descont
+	from empregado e
+	left join emp_desc ed 
+	on ed.matr = e.matr
+	left join desconto dc
+	on dc.cod_desc = ed.cod_desc
+	where e.lotacao = depart.cod_dep
+	group by e.nome) as desconto)) 
+/ (select count(*) from empregado where lotacao = depart.cod_dep ),2 ) as "Salario Promedio",
+round(max(totalSalario),2) as "Mayor Salario",
+CASE 
+WHEN min(totalSalario) = 0 then min(totalSalario)
+else Round(min(totalSalario),2)
+end 
+as "Menor Salario"
+from 
+(select distinct 
+d.nome,
+d.cod_dep,
+COALESCE(
+(SUM((select distinct coalesce(valor,0) from vencimento where cod_venc = ev.cod_venc)))
+-
+(COALESCE((select  distinct sum( coalesce(valor,0)) from desconto d left join emp_desc ed 
+	 on ed.cod_desc = d.cod_desc
+	 where ed.matr = e.matr),0)),0) as totalSalario
+from empregado e
+LEFT join emp_venc ev
+on ev.matr = e.matr
+left join departamento d
+on d.cod_dep = e.lotacao 
+group by e.nome,e.matr,d.nome,d.cod_dep) dados 
+inner join departamento depart 
+on depart.cod_dep = dados.cod_dep
+group by depart.nome,depart.cod_dep
+order by "Salario Promedio" desc
