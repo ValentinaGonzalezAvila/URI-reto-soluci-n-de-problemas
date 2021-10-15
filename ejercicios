@@ -1,5 +1,5 @@
 2615
-select city from customers
+select distinct city from customers
 2622
 select name from customers join legal_person on id = id_customers 
 2611
